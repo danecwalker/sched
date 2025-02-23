@@ -1,0 +1,12 @@
+{
+  "name": "My PWA",
+  "start_url": "/?mode=standalone",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/assets/icons/512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

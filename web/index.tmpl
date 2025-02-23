@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <link rel="manifest" href="/assets/manifest.json" />
+  <style>
+    #gradient-canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      --gradient-color-1: #618dd1; 
+      --gradient-color-2: #61aed1; 
+      --gradient-color-3:	#a161d1;  
+      --gradient-color-4:	#d16196;
+    }
+
+    /* Ensure the scrollbar doesn’t push content and has no visible track background */
+    ::-webkit-scrollbar {
+      width: 8px; /* adjust width as needed */
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent; /* removes the track background */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: oklch(0.922 0 0 / 0.3); /* style the thumb as desired */
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+  </style>
+</head>
+<body class="bg-neutral-900">
+  <div class="w-full min-h-dvh flex flex-col p-4 pr-2 bg-neutral-900 overflow-y-scroll">
+    <div class="relative w-full aspect-[5/3] rounded-4xl flex justify-center items-center overflow-hidden">
+      <canvas id="gradient-canvas" data-transition-in></canvas>
+      <span class="text-5xl z-10 text-white">23.5 h</span>
+    </div>
+
+    <div class="w-full p-4 bg-neutral-200 rounded-4xl mt-4 border border-neutral-200 text-neutral-500 flex flex-col">
+      <div class="flex justify-center items-center bg-neutral-300 rounded-full p-4">
+        <span class="text-sm">This Week</span>
+      </div>
+
+      <h3 class="text-sm text-center mt-2">Friday</h3>
+
+      {{range $val := count 1}}
+        <div class="relative w-full p-4 bg-neutral-100 rounded-2xl mt-2 border border-neutral-200 text-neutral-900 flex justify-between items-start">
+          <div class="absolute top-4 left-4 bottom-4 w-1 bg-blue-300 rounded-full"></div>
+          <div>
+            <h2 class="text-xl ml-4">FRESH PRODUCE</h2>
+          </div>
+          <div class="flex flex-col justify-end items-center">
+            <span class="font-medium">12:00</span>
+            <span class="text-neutral-500">14:00</span>
+          </div>
+        </div>
+      {{end}}
+
+      <h3 class="text-sm text-center mt-2">Friday</h3>
+
+      {{range $val := count 1}}
+        <div class="relative w-full p-4 bg-neutral-100 rounded-2xl mt-2 border border-neutral-200 text-neutral-900 flex justify-between items-start">
+          <div class="absolute top-4 left-4 bottom-4 w-1 bg-blue-300 rounded-full"></div>
+          <div>
+            <h2 class="text-xl ml-4">FRESH PRODUCE</h2>
+          </div>
+          <div class="flex flex-col justify-end items-center">
+            <span class="font-medium">12:00</span>
+            <span class="text-neutral-500">14:00</span>
+          </div>
+        </div>
+      {{end}}
+    </div>
+
+    <div class="w-full flex-1 p-4 bg-neutral-200 rounded-4xl mt-4 border border-neutral-200 text-neutral-500 flex flex-col">
+      <div class="flex justify-center items-center bg-neutral-300 rounded-full p-4">
+        <span class="text-sm">Next Week</span>
+      </div>
+
+      <h3 class="text-sm text-center mt-8">Friday</h3>
+
+      {{range $val := count 1}}
+        <div class="relative w-full p-4 bg-neutral-100 rounded-2xl mt-2 border border-neutral-200 text-neutral-900 flex justify-between items-start">
+          <div class="absolute top-4 left-4 bottom-4 w-1 bg-blue-300 rounded-full"></div>
+          <div>
+            <h2 class="text-xl ml-4">FRESH PRODUCE</h2>
+          </div>
+          <div class="flex flex-col justify-end items-center">
+            <span class="font-medium">12:00</span>
+            <span class="text-neutral-500">14:00</span>
+          </div>
+        </div>
+      {{end}}
+
+     
+    </div>
+
+    <!-- <section class="flex flex-col">
+      <h1 class="text-4xl font-bold">This Week</h1>
+      <div class="w-full p-4 bg-gray-100 rounded-lg mt-4 border border-gray-200 text-gray-500 flex justify-center items-center">
+        <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      </div>
+
+      <div class="w-full p-4 bg-gray-100 rounded-lg mt-4 border border-gray-200 text-gray-500 flex justify-center items-center">
+        <h2>Fresh Produce</h2>
+
+      </div>
+    </section>
+
+    <section class="flex flex-col mt-8">
+      <h1 class="text-4xl font-bold">Next Week</h1>
+      <div class="w-full p-4 bg-gray-100 rounded-lg mt-4 border border-gray-200 text-gray-500 flex justify-center items-center">
+        <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      </div>
+    </section> -->
+  </div>
+  <script src="/assets/js/app.js" type="module"></script>
+</body>
+</html>
