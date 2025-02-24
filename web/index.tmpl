@@ -14,9 +14,9 @@
       position: absolute;
       top: 0;
       left: 0;
-      --gradient-color-1: #618dd1; 
-      --gradient-color-2: #61aed1; 
-      --gradient-color-3:	#a161d1;  
+      --gradient-color-1: #618dd1;
+      --gradient-color-2: #61aed1;
+      --gradient-color-3:	#a161d1;
       --gradient-color-4:	#d16196;
     }
 
@@ -39,71 +39,30 @@
   </style>
 </head>
 <body class="bg-neutral-900">
-  <div class="w-full min-h-dvh flex flex-col p-4 pr-2 bg-neutral-900 overflow-y-scroll">
+  <div class="w-full min-h-dvh flex flex-col p-4 bg-neutral-900 overflow-y-scroll">
     <div class="relative w-full aspect-[5/3] rounded-4xl flex justify-center items-center overflow-hidden">
       <canvas id="gradient-canvas" data-transition-in></canvas>
-      <span class="text-5xl z-10 text-white">23.5 h</span>
-    </div>
-
-    <div class="w-full p-4 bg-neutral-200 rounded-4xl mt-4 border border-neutral-200 text-neutral-500 flex flex-col">
-      <div class="flex justify-center items-center bg-neutral-300 rounded-full p-4">
-        <span class="text-sm">This Week</span>
-      </div>
-
-      <h3 class="text-sm text-center mt-2">Friday</h3>
-
-      {{range $val := count 1}}
-        <div class="relative w-full p-4 bg-neutral-100 rounded-2xl mt-2 border border-neutral-200 text-neutral-900 flex justify-between items-start">
-          <div class="absolute top-4 left-4 bottom-4 w-1 bg-blue-300 rounded-full"></div>
-          <div>
-            <h2 class="text-xl ml-4">FRESH PRODUCE</h2>
-          </div>
-          <div class="flex flex-col justify-end items-center">
-            <span class="font-medium">12:00</span>
-            <span class="text-neutral-500">14:00</span>
-          </div>
-        </div>
-      {{end}}
-
-      <h3 class="text-sm text-center mt-2">Friday</h3>
-
-      {{range $val := count 1}}
-        <div class="relative w-full p-4 bg-neutral-100 rounded-2xl mt-2 border border-neutral-200 text-neutral-900 flex justify-between items-start">
-          <div class="absolute top-4 left-4 bottom-4 w-1 bg-blue-300 rounded-full"></div>
-          <div>
-            <h2 class="text-xl ml-4">FRESH PRODUCE</h2>
-          </div>
-          <div class="flex flex-col justify-end items-center">
-            <span class="font-medium">12:00</span>
-            <span class="text-neutral-500">14:00</span>
-          </div>
-        </div>
-      {{end}}
+      <span class="text-5xl z-10 text-white">{{.TotalHours}} h</span>
     </div>
 
     <div class="w-full flex-1 p-4 bg-neutral-200 rounded-4xl mt-4 border border-neutral-200 text-neutral-500 flex flex-col">
-      <div class="flex justify-center items-center bg-neutral-300 rounded-full p-4">
-        <span class="text-sm">Next Week</span>
-      </div>
+      {{range $date, $val := .ShiftData}}
+        <h3 class="text-sm text-center mt-2">{{dayOfWeek $date}}</h3>
 
-      <h3 class="text-sm text-center mt-8">Friday</h3>
-
-      {{range $val := count 1}}
-        <div class="relative w-full p-4 bg-neutral-100 rounded-2xl mt-2 border border-neutral-200 text-neutral-900 flex justify-between items-start">
-          <div class="absolute top-4 left-4 bottom-4 w-1 bg-blue-300 rounded-full"></div>
-          <div>
-            <h2 class="text-xl ml-4">FRESH PRODUCE</h2>
+        {{range $item := $val}}
+          <div class="relative w-full p-4 bg-neutral-100 rounded-2xl mt-2 border border-neutral-200 text-neutral-900 flex justify-between items-start">
+            <div class="absolute top-4 left-4 bottom-4 w-1 bg-blue-300 rounded-full"></div>
+            <div>
+              <h2 class="text-xl ml-4">{{$item.Name}}</h2>
+            </div>
+            <div class="flex flex-col justify-end items-center">
+              <span class="font-medium">{{timeOnly $item.StartTime}}</span>
+              <span class="text-neutral-500">{{timeOnly $item.EndTime}}</span>
+            </div>
           </div>
-          <div class="flex flex-col justify-end items-center">
-            <span class="font-medium">12:00</span>
-            <span class="text-neutral-500">14:00</span>
-          </div>
-        </div>
+        {{end}}
       {{end}}
-
-     
     </div>
-
     <!-- <section class="flex flex-col">
       <h1 class="text-4xl font-bold">This Week</h1>
       <div class="w-full p-4 bg-gray-100 rounded-lg mt-4 border border-gray-200 text-gray-500 flex justify-center items-center">

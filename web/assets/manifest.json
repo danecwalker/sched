@@ -2,6 +2,8 @@
   "name": "My PWA",
   "start_url": "/?mode=standalone",
   "display": "standalone",
+  "id": "my-pwa",
+  "theme_color": "#0a0a0a",
   "icons": [
     {
       "src": "/assets/icons/512.png",
