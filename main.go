@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting server...")
+
 	entry()
 }
 
@@ -24,6 +26,8 @@ func utcToLocalPreservingTime(t time.Time) time.Time {
 	// // Create a new time with the same components, but in the local time zone.
 	// return time.Date(year, month, day, hour, min, sec, nsec, time.Local)
 }
+
+var otp = ``
 
 type Shift struct {
 	ID        string    `json:"id"`
@@ -112,6 +116,21 @@ func entry() {
 			}
 		}
 
+		totalUnpaidHours := 0.0
+		for _, day := range shiftData {
+			hours := 0.0
+			for _, shift := range day {
+				hours += shift.EndTime.Sub(shift.StartTime).Hours()
+			}
+			if hours < 5 {
+				totalUnpaidHours += 0
+			} else if hours < 10 {
+				totalUnpaidHours += 0.5
+			} else {
+				totalUnpaidHours += 1
+			}
+		}
+
 		b, _ := json.MarshalIndent(shiftData, "", "  ")
 
 		fmt.Println(string(b))
@@ -120,10 +139,75 @@ func entry() {
 		t = t.Funcs(template.FuncMap{
 			"dayOfWeek": func(date string) string {
 				t, _ := time.Parse(time.DateOnly, date)
-				return t.Weekday().String()
+				return t.Format("Monday, 2 Jan")
 			},
 			"timeOnly": func(t time.Time) string {
 				return t.Local().Format("15:04")
+			},
+			"hasHappened": func(t time.Time) bool {
+				return t.Before(time.Now())
+			},
+			"duration": func(start, end time.Time) string {
+				return fmt.Sprintf("%.2f h", end.Sub(start).Hours())
+			},
+			"dayDuration": func(date string) string {
+				day := shiftData[date]
+				if len(day) == 0 {
+					return "0 h"
+				}
+
+				hours := 0.0
+				for _, shift := range day {
+					hours += shift.EndTime.Sub(shift.StartTime).Hours()
+				}
+
+				return fmt.Sprintf("%.2f h", hours)
+			},
+			"breakTime": func(date string) string {
+				day := shiftData[date]
+				if len(day) == 0 {
+					return "0 m"
+				}
+
+				hours := 0.0
+				for _, shift := range day {
+					hours += shift.EndTime.Sub(shift.StartTime).Hours()
+				}
+
+				if hours < 4 {
+					return "0 m"
+				} else if hours < 5 {
+					return "15 m"
+				} else if hours < 7 {
+					return "45 m"
+				} else if hours < 10 {
+					return "60 m"
+				} else {
+					return "90 m"
+				}
+			},
+			"sub": func(a, b float64) float64 {
+				return a - b
+			},
+			"mul": func(a, b float64) float64 {
+				return a * b
+			},
+			"fmtCurrency": func(a float64) string {
+				return fmt.Sprintf("%.2f", a)
+			},
+			"colorFrom": func(name string) string {
+				switch name {
+				case "FRESH PRODUCE":
+					return "bg-emerald-500"
+				case "MEAT":
+					return "bg-rose-400"
+				case "DAIRY & FROZEN":
+					return "bg-sky-300"
+				case "OVERHEAD":
+					return "bg-indigo-400"
+				default:
+					return "bg-neutral-500"
+				}
 			},
 		})
 		t, err = t.ParseGlob("web/*.tmpl")
@@ -132,7 +216,8 @@ func entry() {
 			return
 		}
 
-		if err := t.ExecuteTemplate(w, "index.tmpl", map[string]interface{}{"ShiftData": shiftData, "TotalHours": totalHours}); err != nil {
+		// map[string]interface{}{"ShiftData": shiftData, "TotalHours": totalHours}
+		if err := t.ExecuteTemplate(w, "index.tmpl", map[string]interface{}{"ShiftData": shiftData, "TotalHours": totalHours, "TotalUnpaid": totalUnpaidHours}); err != nil {
 			fmt.Println(err)
 		}
 	})
@@ -141,12 +226,46 @@ func entry() {
 		t := template.New("")
 		t = t.Funcs(template.FuncMap{
 			"dayOfWeek": func(date string) string {
-				fmt.Println(date)
 				t, _ := time.Parse(time.DateOnly, date)
-				return t.Local().Weekday().String()
+				return t.Format("Monday, 2 Jan")
 			},
 			"timeOnly": func(t time.Time) string {
 				return t.Local().Format("15:04")
+			},
+			"hasHappened": func(t time.Time) bool {
+				return t.Before(time.Now())
+			},
+			"duration": func(start, end time.Time) string {
+				return fmt.Sprintf("%.2f h", end.Sub(start).Hours())
+			},
+			"dayDuration": func(date string) string {
+				return ""
+			},
+			"breakTime": func(date string) string {
+				return ""
+			},
+			"sub": func(a, b float64) float64 {
+				return a - b
+			},
+			"mul": func(a, b float64) float64 {
+				return a * b
+			},
+			"fmtCurrency": func(a float64) string {
+				return fmt.Sprintf("%.2f", a)
+			},
+			"colorFrom": func(name string) string {
+				switch name {
+				case "FRESH PRODUCE":
+					return "bg-emerald-500"
+				case "MEAT":
+					return "bg-rose-400"
+				case "DAIRY & FROZEN":
+					return "bg-sky-300"
+				case "OVERHEAD":
+					return "bg-indigo-400"
+				default:
+					return "bg-neutral-500"
+				}
 			},
 		})
 		t, err := t.ParseGlob("web/*.tmpl")
@@ -170,7 +289,6 @@ func entry() {
 			return
 		}
 
-		fmt.Println(shifts)
 		for _, shift := range shifts {
 			shift.EndTime = utcToLocalPreservingTime(shift.EndTime)
 			shift.StartTime = utcToLocalPreservingTime(shift.StartTime)
@@ -194,7 +312,6 @@ func entry() {
 		startDay := time.Now().Add(-time.Duration((int(weekDay)+6)%7) * 24 * time.Hour)
 		startOfWeek := time.Date(startDay.Year(), startDay.Month(), startDay.Day(), 0, 0, 0, 0, time.Local)
 		endOfNextWeek := startOfWeek.AddDate(0, 0, 14)
-		fmt.Println(startOfWeek, endOfNextWeek)
 
 		stmt := `SELECT start_time, end_time, name, id FROM shifts WHERE start_time BETWEEN ? AND ?`
 
@@ -219,6 +336,31 @@ func entry() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	})
+
+	mux.HandleFunc("GET /api/otp", func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers to allow all origins. You may want to restrict this to specific origins in a production environment.
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Expose-Headers", "Content-Type")
+
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+
+		for {
+			if otp != "" {
+				fmt.Fprintf(w, "data: %s\n\n", otp)
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
+	})
+
+	mux.HandleFunc("POST /api/otp", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("POST /api/otp")
+		otp = r.FormValue("otp")
+
+		w.WriteHeader(http.StatusOK)
 	})
 
 	fmt.Println("Server started at http://localhost:3000")

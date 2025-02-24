@@ -15,4 +15,27 @@ function isPWA() {
   const gradient = new Gradient()
   // Call `initGradient` with the selector to your canvas
   gradient.initGradient('#gradient-canvas')
+
+  let totalHours = document.querySelector('#total-hours');
+  let totalPay = document.querySelector('#total-pay');
+
+  let flip = true;
+
+  totalHours.addEventListener('click', function() {
+    if (!flip) {
+      return;
+    }
+    flip = !flip;
+    totalHours.style.display = 'none';
+    totalPay.style.display = 'flex';
+  });
+
+  totalPay.addEventListener('click', function() {
+    if (flip) {
+      return;
+    }
+    flip = !flip;
+    totalHours.style.display = 'flex';
+    totalPay.style.display = 'none';
+  });
 })();
