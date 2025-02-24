@@ -16,6 +16,11 @@ function isPWA() {
   // Call `initGradient` with the selector to your canvas
   gradient.initGradient('#gradient-canvas')
 
+  let refresh = document.querySelector('#refresh');
+  refresh.addEventListener('click', function() {
+    window.location.reload();
+  });
+
   let totalHours = document.querySelector('#total-hours');
   let totalPay = document.querySelector('#total-pay');
 
