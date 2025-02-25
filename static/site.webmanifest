@@ -1,0 +1,8 @@
+{
+  "short_name": "Roster",
+  "name": "My Roster",
+  "icons": [
+  ],
+  "start_url": ".",
+  "display": "standalone"
+}

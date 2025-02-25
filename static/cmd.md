@@ -1,0 +1,1 @@
+npx pwa-asset-generator static/dots.png static -m site.webmanifest -b "#0a0a0a" --padding "calc(50vh - 24%) calc(50vw - 24%)" -q 100 -i static/changes.html --favicon
