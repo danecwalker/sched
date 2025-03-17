@@ -1,14 +1,29 @@
 <script lang="ts">
-  import type { PageProps } from "./$types";
   import { Gradient } from "$lib/gradient.js";
   import { onMount } from "svelte";
-  import { Clock, Donut, Loader2 } from "lucide-svelte";
-  import { getShifts, pb, type ShiftCollection } from "$lib/pb";
+  import { Clock, Donut, Loader2, WifiOff } from "lucide-svelte";
+  import { getShifts, pb, type Shift, type ShiftCollection } from "$lib/pb";
+  import type { PageProps } from "./$types";
+  import type { RecordModel } from "pocketbase";
 
-  let now = $state(new Date(Date.now() + 24*60*60*1000));
-  let loaded = $state(false);
-  let myshifts: { current: ShiftCollection[]; next: ShiftCollection[] } =
-    $state({ current: [], next: [] });
+  let { data }: PageProps = $props();
+
+  let now = $state(new Date());
+  let loaded = $state(true);
+  let realtime = $state(true);
+  let displayPay = $state(false);
+
+  const dateEquals = (date1: Date, date2: Date) => {
+    return date1.getTime() === date2.getTime();
+  };
+
+  let myshifts: {
+    current: ShiftCollection[];
+    next: ShiftCollection[];
+  } = $state({
+    current: data.shifts?.current || [],
+    next: data.shifts?.next || [],
+  });
   let currentView: "current" | "next" = $state("current");
   let total_hours = $derived.by(() => {
     let total = 0;
@@ -25,69 +40,17 @@
     return total;
   });
 
-  let displayPay = $state(false);
-
-  let DateFormatter = new Intl.DateTimeFormat('en', {
-    timeZone: 'Australia/Brisbane',
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
   onMount(() => {
     const gradient = new Gradient();
     gradient.initGradient("#canvas");
 
-    pb.collection("shifts").subscribe("*", async (data) => {
-      myshifts = await getShifts();
-    });
-
-    if (!loaded)
-      getShifts().then((shifts) => {
-        myshifts = shifts;
-        loaded = true;
+    if (window.navigator.onLine) {
+      pb.collection("shifts").subscribe("*", async (e) => {
+        let s = await getShifts();
+        myshifts.current = s.current;
+        myshifts.next = s.next;
       });
-
-    let interval = setInterval(() => {
-      now = new Date(Date.now() + 4*24*60*60*1000 - 13*60*60*1000 - 42*60*1000);
-      // find today
-      const today = myshifts.current.find((shift) => {
-        return shift.date === DateFormatter.format(now);
-      });
-
-      if (today) {
-        const current = today.shifts.find((block) => {
-          // now is within 5 minutes of the start of the block
-          let start = new Date(block.raw_start_time);
-          return (
-            now >= new Date(start.getTime() - 5*60*1000) &&
-            now <= start
-          );
-        });
-
-        if (current) {
-          if (localStorage.getItem(current.id) !== "true") {
-            new Notification("Shift Reminder", {
-              body: `Your ${capitalize(current.name)} shift begins soon.`,
-              icon: "/icon-512.png"
-            });
-            localStorage.setItem(current.id, "true");
-            console.log("Current block");
-            console.log(current);
-          }
-        }
-      }
-    }, 1000);
-
-    Notification.requestPermission().then((result) => {
-      if (result === "granted") {
-        console.log("Notification permission granted");
-      }
-    });
-
-    return () => {
-      clearInterval(interval);
-    };
+    }
   });
 
   const capitalize = (str: string) => {
@@ -102,7 +65,7 @@
     duration: number,
     opt?: {
       full?: boolean;
-    }
+    },
   ) => {
     if (opt?.full) {
       const hours = Math.floor(duration);
@@ -127,12 +90,6 @@
   };
 </script>
 
-<svelte:head>
-  <link rel="manifest" href="site.webmanifest" />
-  <title>My Roster</title>
-  <meta name="theme-color" content="#f5f5f5" />
-</svelte:head>
-
 <div class="bg-neutral-100 w-full h-dvh">
   <div
     class="relative w-full h-full max-w-lg mx-auto flex flex-col pb-8 overflow-y-auto"
@@ -142,6 +99,11 @@
         class="relative w-full bg-neutral-100 aspect-[7/3] overflow-hidden rounded-md"
       >
         <canvas id="canvas" class="w-full h-full"></canvas>
+        {#if !realtime}
+          <div class="absolute top-2 right-2 text-red-400">
+            <WifiOff size={20} />
+          </div>
+        {/if}
         <div
           class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-neutral-800"
         >
@@ -189,25 +151,22 @@
       <div class="w-full flex justify-start items-center gap-2">
         <button onclick={() => (currentView = "current")}
           ><div
-            class={`text-xs 
-        ${currentView === "current" ? "text-neutral-100 bg-neutral-950 border-neutral-950" : "text-neutral-500 bg-neutral-200 border-neutral-300"} 
+            class={`text-xs
+        ${currentView === "current" ? "text-neutral-100 bg-neutral-950 border-neutral-950" : "text-neutral-500 bg-neutral-200 border-neutral-300"}
         py-2 px-4 rounded-full cursor-pointer border transition duration-200`}
           >
             Current Week
           </div></button
         >
-        <button onclick={() => (currentView = "next")}
+        <button
+          onclick={() => (currentView = "next")}
           disabled={myshifts.next.length === 0}
           ><div
-            class={`text-xs 
-          ${currentView !== "current" ? "text-neutral-100 bg-neutral-950 border-neutral-950" : "text-neutral-500 bg-neutral-200 border-neutral-300"} 
+            class={`text-xs
+          ${currentView !== "current" ? "text-neutral-100 bg-neutral-950 border-neutral-950" : "text-neutral-500 bg-neutral-200 border-neutral-300"}
           py-2 px-4 rounded-full cursor-pointer border transition duration-200`}
           >
-            {
-              myshifts.next.length === 0
-                ? "Unavailable"
-                : `Next Week`
-            }
+            {myshifts.next.length === 0 ? "Unavailable" : `Next Week`}
           </div></button
         >
       </div>
